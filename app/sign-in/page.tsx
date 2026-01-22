@@ -52,9 +52,9 @@ export default function SignIn() {
                 startTransition (async function () {
                     await storeCookies (`token` , responseData?.token || "")
                     if (responseData.role == `ADMIN` ) 
-                        setTimeout(() => router.push(`/admin`) , 1000)
+                        setTimeout(() => router.push(`/admin/profile`) , 1000)
                     if (responseData.role == `CUSTOMER `)
-                        setTimeout(() => router.push(`/customer`) , 1000)
+                        setTimeout(() => router.push(`/customer/profile`) , 1000)
                 })
             }else {
                 // Assume that login invalid
