@@ -39,7 +39,7 @@ export default function SignIn() {
             )
 
             const responseData : LoginResponse = await response.json();
-            const message = responseData.message
+            const message = responseData.message || ""
             if (!response.ok) {
                 // if status code not 200 , 201, 204 etc 
                 toast.error(message , {containerId: `toastLogin`})
@@ -53,7 +53,8 @@ export default function SignIn() {
                     await storeCookies (`token` , responseData?.token || "")
                     if (responseData.role == `ADMIN` ) 
                         setTimeout(() => router.push(`/admin/profile`) , 1000)
-                    if (responseData.role == `CUSTOMER `)
+                    await storeCookies(`token`, responseData?.token || "")
+                    if (responseData.role == `CUSTOMER`)
                         setTimeout(() => router.push(`/customer/profile`) , 1000)
                 })
             }else {
