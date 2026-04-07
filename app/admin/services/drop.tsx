@@ -4,16 +4,24 @@ import { getCookies } from "@/helper/cookies";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
+interface DropButtonProps {
+    selectedData: number;
+    serviceName: string;
+    endpoint?: string;
+    redirectUrl?: string;
+}
+
 export default function DropServiceButton({
-    selectedData
-}:{
-    selectedData: number
-}){
-    const [isLoading , setIsLoading] = useState(false);
+    selectedData,
+    serviceName,
+    endpoint = "services",
+    redirectUrl = "/admin/services"
+}: DropButtonProps) {
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     const handleDelete = async (e: FormEvent) => {
-        if(!confirm("Apakah anda yakin ingin menghapus data ini?")){
+        if (!confirm("Apakah anda yakin ingin menghapus data ini?")) {
             return;
         }
 
@@ -21,12 +29,13 @@ export default function DropServiceButton({
 
         try {
             e.preventDefault();
-            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/services/${selectedData}`;
+            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/${endpoint}/${selectedData}`;
             const response = await fetch(
                 url,
                 {
                     method: "DELETE",
                     headers: {
+                        "Content-Type": "application/json",
                         "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                         Authorization: `Bearer ${await getCookies("token")}`,
                     },
@@ -35,13 +44,13 @@ export default function DropServiceButton({
             if (!response.ok) {
                 throw new Error("Gagal menghapus data.");
             }
-            router.push("/admin/services");
+            router.push(redirectUrl);
         } catch (error) {
             console.error("Error menghapus data:", error);
         }
     }
 
-    return(
+    return (
         <button
             onClick={handleDelete}
             disabled={isLoading}

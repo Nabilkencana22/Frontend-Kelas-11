@@ -1,35 +1,32 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { KeyboardEvent, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
 type Props = {
     search: string
 }
 
-// Element name = search have a property
-// "search" with string type
 export default function Search(props: Props) {
-    const [keyword, setKeyword] =
-        useState<string>(props.search)
-    const router = useRouter();
+    const [keyword, setKeyword] = useState<string>(props.search)
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
-    function handleSearch(e: KeyboardEvent<HTMLInputElement>) {
-        e.preventDefault();
-        if (e.key === `Enter`) {
-            // if user press Enter key
-            const params = new URLSearchParams(window.location.search);
-            // get current URL search params
-            if (keyword === ``) {
-                params.delete(`search`);
-                // delete search from URL
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            const params = new URLSearchParams(searchParams.toString())
+
+            if (keyword === "") {
+                params.delete("search")
             } else {
-                params.set(`search`, keyword);
-                // set add search to URL
+                params.set("search", keyword)
             }
-            router.push(`?${params.toString()}`);
-        }
-    }
+
+            router.replace(`?${params.toString()}`, { scroll: false })
+        }, 500) // delay 500ms
+
+        return () => clearTimeout(delayDebounce)
+    }, [keyword])
 
     return (
         <div className="w-full p-3">
@@ -38,10 +35,9 @@ export default function Search(props: Props) {
                 name="search"
                 id="search"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Pencarian Service..."
+                placeholder="Pencarian..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                onKeyUp={handleSearch}
             />
         </div>
     )

@@ -40,14 +40,14 @@ export interface DeleteType {
 
 // Creaete function to get services from API
 type SearchParams = {
-    [key : string]: 
-    string | boolean |number | undefined
+    [key: string]:
+    string | boolean | number | undefined
 }
 
-async function getServices(params? : SearchParams): Promise<ServiceResponse> {
+async function getServices(params?: SearchParams): Promise<ServiceResponse> {
     try {
-        const queryParams = params ? 
-        Object.keys(params).filter(p => typeof params[p] !== 'undefined').map(p => `${p}=${params[p]}`).join('&') : '';
+        const queryParams = params ?
+            Object.keys(params).filter(p => typeof params[p] !== 'undefined').map(p => `${p}=${params[p]}`).join('&') : '';
         const url = `${process.env.NEXT_PUBLIC_BASE_URL}/services?${queryParams}`;
         const response = await fetch(url, {
             method: "GET",
@@ -103,7 +103,7 @@ export default async function ServicePage(props: Props) {
 
     return (
         <div className="w-full p-5">
-            
+
             {
                 count == 0 ?
                     <div className="w-full rounded p-5 bg-sky-200 text-sky-600 font-semibold">Sorry, there are no data to display.</div> :
@@ -143,7 +143,7 @@ export default async function ServicePage(props: Props) {
                                                 <button type="button" className="bg-sky-500 text-white px-2 py-2 rounded-sm font-semibold cursor-pointer mr-4 shadow shadow-sky-300 hover:bg-sky-600">Edit</button>
                                             </Link>
 
-                                            <DropServiceButton selectedData={service.id} />
+                                            <DropServiceButton selectedData={service.id} serviceName={service.name} />
                                         </td>
                                     </tr>
                                 ))}
