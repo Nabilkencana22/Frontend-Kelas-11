@@ -230,17 +230,6 @@ export default function FormBill({ services, customers }: Props) {
                     </div>
                 </div>
 
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="paid"
-                        name="paid"
-                        checked={form.paid}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                    <label htmlFor="paid" className="ml-2 font-medium text-gray-700">Mark as Paid</label>
-                </div>
 
                 <div className="flex gap-4 pt-4">
                     <button

@@ -46,6 +46,17 @@ export default function FormBillEdit({ services, customers, bill, billId }: Prop
         paid: bill.paid
     });
 
+    // Track original values for change detection
+    const originalValues = {
+        customer_id: String(bill.customer_id),
+        month: bill.month,
+        year: bill.year,
+        measurement_number: bill.measurement_number,
+        usage_value: String(bill.usage_value),
+        price: String(bill.price),
+        paid: bill.paid
+    };
+
     const validateForm = () => {
         if (!form.customer_id) {
             setError("Customer is required.");
@@ -85,6 +96,38 @@ export default function FormBillEdit({ services, customers, bill, billId }: Prop
 
         setLoading(true);
         try {
+            // Build payload with only changed fields
+            const payload: any = {};
+
+            if (form.customer_id !== originalValues.customer_id) {
+                payload.customer_id = Number(form.customer_id);
+            }
+            if (form.month !== originalValues.month) {
+                payload.month = Number(form.month);
+            }
+            if (form.year !== originalValues.year) {
+                payload.year = Number(form.year);
+            }
+            if (form.measurement_number.trim() !== originalValues.measurement_number) {
+                payload.measurement_number = form.measurement_number.trim();
+            }
+            if (form.usage_value !== originalValues.usage_value) {
+                payload.usage_value = Number(form.usage_value);
+            }
+            if (form.price !== originalValues.price) {
+                payload.price = Number(form.price);
+            }
+            if (form.paid !== originalValues.paid) {
+                payload.paid = form.paid;
+            }
+
+            // If no changes, show message
+            if (Object.keys(payload).length === 0) {
+                setError("No changes to update.");
+                setLoading(false);
+                return;
+            }
+
             const url = `${process.env.NEXT_PUBLIC_BASE_URL}/bills/${billId}`
             const response = await fetch(url, {
                 method: "PATCH",
@@ -93,15 +136,7 @@ export default function FormBillEdit({ services, customers, bill, billId }: Prop
                     "APP-KEY": process.env.NEXT_PUBLIC_APP_KEY || "",
                     Authorization: `Bearer ${await getCookies("token")}`,
                 },
-                body: JSON.stringify({
-                    customer_id: Number(form.customer_id),
-                    month: Number(form.month),
-                    year: Number(form.year),
-                    measurement_number: form.measurement_number.trim(),
-                    usage_value: Number(form.usage_value),
-                    price: Number(form.price),
-                    paid: form.paid
-                }),
+                body: JSON.stringify(payload),
             })
 
             if (!response.ok) {

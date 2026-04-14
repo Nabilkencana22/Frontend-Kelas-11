@@ -18,13 +18,13 @@ export interface LoginResponse {
 export default function SignIn() {
     const [username, setUsername] = useState<string>("")
     const [password, setPassword] = useState<string>("")
-    const [pending , startTransition] = useTransition()
+    const [pending, startTransition] = useTransition()
     const router = useRouter()
 
     async function handleSignIn(event: FormEvent) {
         try {
             event.preventDefault()
-            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/auth`
+            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/sign-in`
             const requestData = { username, password }
             const response = await fetch(
                 url,
@@ -38,30 +38,30 @@ export default function SignIn() {
                 }
             )
 
-            const responseData : LoginResponse = await response.json();
+            const responseData: LoginResponse = await response.json();
             const message = responseData.message || ""
             if (!response.ok) {
                 // if status code not 200 , 201, 204 etc 
-                toast.error(message , {containerId: `toastLogin`})
+                toast.error(message, { containerId: `toastLogin` })
                 return;
             }
 
             if (responseData?.success == true) {
                 // Assume that login success
-                toast.success(message , {containerId : `toastLogin`})
-                startTransition (async function () {
-                    await storeCookies (`token` , responseData?.token || "")
-                    if (responseData.role == `ADMIN` ) 
-                        setTimeout(() => router.push(`/admin/profile`) , 1000)
+                toast.success(message, { containerId: `toastLogin` })
+                startTransition(async function () {
+                    await storeCookies(`token`, responseData?.token || "")
+                    if (responseData.role == `ADMIN`)
+                        setTimeout(() => router.push(`/admin/profile`), 1000)
                     await storeCookies(`token`, responseData?.token || "")
                     if (responseData.role == `CUSTOMER`)
-                        setTimeout(() => router.push(`/customer/profile`) , 1000)
+                        setTimeout(() => router.push(`/customer/profile`), 1000)
                 })
-            }else {
+            } else {
                 // Assume that login invalid
-                toast.warning(message , {containerId:`toastLogin`})
+                toast.warning(message, { containerId: `toastLogin` })
             }
-            
+
         } catch (error) {
             console.log(error)
             alert(`Something Wrong`)
@@ -70,7 +70,7 @@ export default function SignIn() {
 
     return (
         <div className="w-full h-dvh flex justify-center items-center bg-blue-50">
-            <ToastContainer containerId={`toastLogin`}/>
+            <ToastContainer containerId={`toastLogin`} />
             <div className="bg-white w-full md:w-1/2 lg:w-1/3 p-10 rounded-xl flex flex-col items-center">
                 <h1 className="font-bold text-blue-500 text-2xl text-center">
                     Sign In to PDAM
@@ -121,4 +121,4 @@ export default function SignIn() {
             </div>
         </div >
     )
-}
+} 

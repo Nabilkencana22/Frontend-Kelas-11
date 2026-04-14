@@ -2,6 +2,7 @@ import Link from "next/link"
 import { getCookies } from "@/helper/cookies"
 import Search from "../services/search"
 import DropServiceButton from "../services/drop"
+import VerifyPaymentButton from "./VerifyButton"
 
 export interface BillResponse {
     success: boolean
@@ -29,6 +30,7 @@ export interface BillType {
         name: string
         customer_number: string
     }
+    payments?: any
 }
 
 type SearchParams = {
@@ -131,11 +133,18 @@ export default async function BillPage(props: Props) {
                                         <td className="text-center p-2">{bill.usage_value}</td>
                                         <td className="text-center p-2 font-semibold">Rp.{bill.price.toLocaleString()}</td>
                                         <td className="text-center p-2">
-                                            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${bill.paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                {bill.paid ? 'Paid' : 'Unpaid'}
-                                            </span>
+                                            {bill.paid ? (
+                                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-700">Paid</span>
+                                            ) : bill.payments ? (
+                                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">Processing</span>
+                                            ) : (
+                                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">Unpaid</span>
+                                            )}
                                         </td>
                                         <td className="text-center p-2">
+                                            {!(bill.paid) && bill.payments && (
+                                                <VerifyPaymentButton paymentId={Array.isArray(bill.payments) ? bill.payments[0]?.id : bill.payments?.id} />
+                                            )}
                                             <Link href={`/admin/bill/edit/${bill.id}`}>
                                                 <button type="button" className="bg-blue-500 text-white px-2 py-1 rounded-sm font-semibold mr-2 hover:bg-blue-600">Edit</button>
                                             </Link>

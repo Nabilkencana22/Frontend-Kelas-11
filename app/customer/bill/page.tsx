@@ -29,6 +29,7 @@ export interface BillType {
         name: string
         customer_number: string
     }
+    payments?: any
 }
 
 export interface ResponCustomerProfile {
@@ -124,12 +125,14 @@ async function getBills(params?: SearchParams): Promise<BillResponse> {
 
 type Props = {
     searchParams: Promise<{
-        search?: string
-    }>
+        search?: string;
+        status?: string;
+        billId?: string;
+    }>;
 }
 
 export default async function CustomerBillPage(props: Props) {
-    const { search } = await props.searchParams;
+    const { search, status, billId } = await props.searchParams;
     const customer = await getCustomerProfile();
     if (!customer) {
         return (
@@ -139,7 +142,12 @@ export default async function CustomerBillPage(props: Props) {
         )
     }
     const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const { message, success, data, count } = await getBills({ search, owner_token: customer.owner_token });
+    let { message, success, data, count } = await getBills({ search, owner_token: customer.owner_token });
+
+    if (success && data) {
+        data = data.filter((bill: any) => bill.customer_id === customer.id);
+        count = data.length;
+    }
 
     if (!success) {
         return (
@@ -149,43 +157,117 @@ export default async function CustomerBillPage(props: Props) {
         )
     }
 
+    const unpaidBills = data.filter((bill: any) => !bill.paid);
+    const paidBills = data.filter((bill: any) => bill.paid);
+    const paymentSuccess = status === "success";
+
     return (
         <div className="w-full p-5">
-            {count == 0 ? (
-                <div className="w-full rounded p-5 bg-sky-200 text-sky-600 font-semibold">Sorry, there are no bills to display.</div>
-            ) : (
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h4 className="text-xl font-bold">My Bills</h4>
-                            <p className="text-sm text-gray-600">Bill List ({count} Bills)</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Search search={search || ""} />
-                        </div>
-                    </div>
+            {paymentSuccess && (
+                <div className="mb-6 rounded-md border border-emerald-300 bg-emerald-50 p-4 text-emerald-700 font-medium shadow-sm">
+                    ✅ Success! Payment for bill #{billId ? billId : ""} has been successfully submitted and is being processed.
+                </div>
+            )}
 
+            {/* Bagian Tagihan Aktif / Belum Dibayar */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 className="text-xl font-bold">Unpaid Bills</h4>
+                        <p className="text-sm text-gray-600">You have {unpaidBills.length} bill(s) that require payment</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Search search={search || ""} />
+                    </div>
+                </div>
+
+                {unpaidBills.length === 0 ? (
+                    <div className="w-full rounded p-5 bg-sky-100 text-sky-700 font-semibold border border-sky-300">
+                        🎉 Yay! All your bills have been paid.
+                    </div>
+                ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full rounded-md overflow-hidden shadow border">
+                        <table className="w-full rounded-md overflow-hidden shadow border bg-white">
                             <thead>
                                 <tr>
-                                    <th className="p-2 bg-sky-100 text-center">Month/Year</th>
-                                    <th className="p-2 bg-sky-100 text-center">Measurement</th>
-                                    <th className="p-2 bg-sky-100 text-center">Usage</th>
-                                    <th className="p-2 bg-sky-100 text-center">Price</th>
-                                    <th className="p-2 bg-sky-100 text-center">Status</th>
+                                    <th className="p-3 bg-sky-100 text-center">Month/Year</th>
+                                    <th className="p-3 bg-sky-100 text-center">Measurement</th>
+                                    <th className="p-3 bg-sky-100 text-center">Usage</th>
+                                    <th className="p-3 bg-sky-100 text-center">Price</th>
+                                    <th className="p-3 bg-sky-100 text-center">Status</th>
+                                    <th className="p-3 bg-sky-100 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map(bill => (
-                                    <tr key={`KeyBill${bill.id}`} className="hover:bg-sky-50 border-b border-gray-200">
-                                        <td className="text-center p-2">{months[bill.month - 1]}/{bill.year}</td>
-                                        <td className="text-center p-2 text-sm">{bill.measurement_number}</td>
-                                        <td className="text-center p-2">{bill.usage_value}</td>
-                                        <td className="text-center p-2 font-semibold">Rp.{bill.price.toLocaleString()}</td>
-                                        <td className="text-center p-2">
-                                            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${bill.paid ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                {bill.paid ? 'Paid' : 'Unpaid'}
+                                {unpaidBills.map(bill => (
+                                    <tr key={`KeyBillUnpaid${bill.id}`} className="hover:bg-sky-50 border-b border-gray-200">
+                                        <td className="text-center p-3 font-medium">{months[bill.month - 1]} {bill.year}</td>
+                                        <td className="text-center p-3 text-sm text-gray-600">{bill.measurement_number}</td>
+                                        <td className="text-center p-3">{bill.usage_value} m³</td>
+                                        <td className="text-center p-3 font-bold text-gray-800">Rp.{bill.price.toLocaleString()}</td>
+                                        <td className="text-center p-3">
+                                            {bill.payments ? (
+                                                <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700`}>
+                                                    Processing
+                                                </span>
+                                            ) : (
+                                                <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700`}>
+                                                    Unpaid
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="text-center p-3">
+                                            {bill.payments ? (
+                                                <span className="text-sm font-medium text-gray-500 italic">Pending Verification</span>
+                                            ) : (
+                                                <Link href={`/customer/payment?billId=${bill.id}`} className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-white text-sm font-semibold hover:bg-emerald-600 transition shadow-sm">
+                                                    Pay Now
+                                                </Link>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Bagian Riwayat Pembayaran */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 className="text-xl font-bold">Payment History</h4>
+                        <p className="text-sm text-gray-600">List of paid bills</p>
+                    </div>
+                </div>
+
+                {paidBills.length === 0 ? (
+                    <div className="w-full rounded p-5 bg-gray-100 text-gray-500 font-semibold border border-gray-300">
+                        You don't have any payment history yet.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full rounded-md overflow-hidden shadow border bg-gray-50 opacity-90">
+                            <thead>
+                                <tr>
+                                    <th className="p-3 bg-gray-200 text-center text-gray-700">Month/Year</th>
+                                    <th className="p-3 bg-gray-200 text-center text-gray-700">Measurement</th>
+                                    <th className="p-3 bg-gray-200 text-center text-gray-700">Usage</th>
+                                    <th className="p-3 bg-gray-200 text-center text-gray-700">Price</th>
+                                    <th className="p-3 bg-gray-200 text-center text-gray-700">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paidBills.map(bill => (
+                                    <tr key={`KeyBillPaid${bill.id}`} className="hover:bg-gray-100 border-b border-gray-200">
+                                        <td className="text-center p-3 text-gray-600 font-medium">{months[bill.month - 1]} {bill.year}</td>
+                                        <td className="text-center p-3 text-sm text-gray-500">{bill.measurement_number}</td>
+                                        <td className="text-center p-3 text-gray-600">{bill.usage_value} m³</td>
+                                        <td className="text-center p-3 font-semibold text-gray-600">Rp.{bill.price.toLocaleString()}</td>
+                                        <td className="text-center p-3">
+                                            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700`}>
+                                                Paid
                                             </span>
                                         </td>
                                     </tr>
@@ -193,8 +275,8 @@ export default async function CustomerBillPage(props: Props) {
                             </tbody>
                         </table>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
-    )
+    );
 }
