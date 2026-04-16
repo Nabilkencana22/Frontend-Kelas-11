@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { getCookies } from "@/helper/cookies"
 
+import { CheckCircle, Loader2 } from "lucide-react"
+
 type Props = {
     paymentId: number
 }
@@ -44,10 +46,15 @@ export default function VerifyPaymentButton({ paymentId }: Props) {
     return (
         <button
             type="button"
-            className="bg-emerald-500 text-white px-2 py-1 rounded-sm font-semibold mr-2 hover:bg-emerald-600 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm shadow-emerald-200 active:scale-95 disabled:opacity-50"
             onClick={handleVerify}
             disabled={isLoading}
         >
+            {isLoading ? (
+                <Loader2 size={14} className="animate-spin" />
+            ) : (
+                <CheckCircle size={14} />
+            )}
             {isLoading ? "Verifying..." : "Verify"}
         </button>
     )
