@@ -135,9 +135,7 @@ export default async function CustomerPage(props: Props) {
                 </div>
 
                 <div className="flex items-center flex-wrap gap-3">
-                    <div className="glass-card px-4 py-2 border-slate-200/50">
-                        <Search search={search || ""} />
-                    </div>
+                    <Search search={search || ""} />
                     <Link href="/admin/customer/add">
                         <button className="gradient-emerald text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-emerald-100 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 group">
                             <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />

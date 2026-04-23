@@ -3,72 +3,36 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-    UserPlus, 
-    User, 
-    Lock, 
-    Phone, 
-    UserCircle, 
-    MapPin, 
-    CreditCard, 
-    Zap, 
+import {
+    UserPlus,
+    User,
+    Lock,
+    Phone,
+    UserCircle,
+    MapPin,
+    CreditCard,
+    Zap,
     ArrowLeft,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    Shield
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 
-interface Service {
-    id: number;
-    name: string;
-    price: number;
-}
+ 
 
 export default function SignUpPage() {
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [name, setName] = useState<string>("");
     const [phone, setPhone] = useState<string>("");
-    const [address, setAddress] = useState<string>("");
-    const [customerNumber, setCustomerNumber] = useState<string>("");
-    const [serviceId, setServiceId] = useState<string>("");
     
-    const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(false);
-    const [fetchingServices, setFetchingServices] = useState(true);
     
     const router = useRouter();
 
-    useEffect(() => {
-        async function fetchServices() {
-            try {
-                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/services`
-                const response = await fetch(url, {
-                    method: "GET",
-                    headers: {
-                        "app-key": `${process.env.NEXT_PUBLIC_APP_KEY}`
-                    }
-                })
-                const result = await response.json()
-                if (response.ok) {
-                    setServices(result.data || [])
-                }
-            } catch (error) {
-                console.error("Error fetching services:", error)
-            } finally {
-                setFetchingServices(false)
-            }
-        }
-        fetchServices()
-    }, [])
-
     async function handleSignUp(e: React.FormEvent) {
         e.preventDefault();
-        
-        if (!serviceId) {
-            toast.error("Please select a service", { containerId: 'toastSignUp' });
-            return;
-        }
 
         setLoading(true);
         try {
@@ -76,12 +40,9 @@ export default function SignUpPage() {
                 username,
                 password,
                 phone,
-                name,
-                address,
-                customer_number: customerNumber,
-                service_id: Number(serviceId)
+                name
             })
-            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/customers`
+            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admins`
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -90,14 +51,14 @@ export default function SignUpPage() {
                 },
                 body: request
             })
-            
+
             const responseData = await response.json();
-            
+
             if (!response.ok) {
                 toast.error(responseData.message || "Failed to register", { containerId: 'toastSignUp' });
                 return;
             }
-            
+
             toast.success("Account created successfully!", { containerId: 'toastSignUp' });
             setTimeout(() => router.push("/sign-in"), 1500);
         } catch (error) {
@@ -116,7 +77,7 @@ export default function SignUpPage() {
 
             <ToastContainer containerId="toastSignUp" />
 
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="relative z-10 bg-white/80 backdrop-blur-xl p-8 md:p-12 w-full max-w-[700px] rounded-[2.5rem] shadow-[0_20px_50px_rgba(8,_112,_184,_0.08)] border border-white/50"
@@ -129,17 +90,17 @@ export default function SignUpPage() {
                 </Link>
 
                 <div className="flex flex-col items-center mb-10">
-                    <motion.div 
+                    <motion.div
                         whileHover={{ scale: 1.05, rotate: 5 }}
                         className="w-16 h-16 gradient-blue rounded-2xl flex items-center justify-center text-white mb-4 shadow-xl shadow-blue-200"
                     >
-                        <UserPlus size={32} />
+                        <Shield size={32} />
                     </motion.div>
                     <h1 className="text-3xl font-black text-slate-800 tracking-tight text-center">
-                        Join Our <span className="text-transparent bg-clip-text gradient-blue">Community</span>
+                        Secure <span className="text-transparent bg-clip-text gradient-blue">Admin</span> Access
                     </h1>
                     <p className="text-slate-400 font-medium text-center mt-2">
-                        Register as a customer to manage your bills easily
+                        Register a new administrator account
                     </p>
                 </div>
 
@@ -219,86 +180,26 @@ export default function SignUpPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 ml-1">Customer Number (NIK)</label>
-                                <div className="relative group">
-                                    <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
-                                    <input
-                                        type="text"
-                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700 font-semibold text-sm"
-                                        value={customerNumber}
-                                        onChange={(e) => setCustomerNumber(e.target.value)}
-                                        placeholder="16-digit NIK"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 ml-1">Address</label>
-                                <div className="relative group">
-                                    <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
-                                    <input
-                                        type="text"
-                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700 font-semibold text-sm"
-                                        value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
-                                        placeholder="Home address"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Selection Section */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Zap size={14} className="text-amber-500" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/60">Service Plan</h3>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500 ml-1">Select Service</label>
-                            <div className="relative group">
-                                <Zap size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
-                                <select
-                                    value={serviceId}
-                                    onChange={(e) => setServiceId(e.target.value)}
-                                    className="w-full pl-12 pr-10 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700 font-semibold text-sm appearance-none cursor-pointer"
-                                    required
-                                >
-                                    <option value="" disabled>Choose a service plan...</option>
-                                    {services.map((service) => (
-                                        <option key={service.id} value={service.id.toString()}>
-                                            {service.name} — Rp {service.price.toLocaleString()}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <UserPlus size={14} />
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <motion.button
                         type="submit"
-                        disabled={loading || fetchingServices}
+                        disabled={loading}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className="w-full py-4.5 gradient-blue text-white font-black rounded-2xl shadow-xl shadow-blue-200 hover:shadow-2xl hover:shadow-blue-300 transition-all flex items-center justify-center gap-3 group disabled:opacity-70 mt-4 relative overflow-hidden"
                     >
                         <AnimatePresence mode="wait">
                             {loading ? (
-                                <motion.div 
+                                <motion.div
                                     key="loading"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" 
+                                    className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"
                                 />
                             ) : (
-                                <motion.div 
+                                <motion.div
                                     key="content"
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -322,4 +223,4 @@ export default function SignUpPage() {
             </motion.div>
         </div>
     )
-}
+}

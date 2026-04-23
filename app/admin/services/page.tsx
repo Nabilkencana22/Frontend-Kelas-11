@@ -102,24 +102,39 @@ export default async function ServicePage(props: Props) {
     }
 
     return (
-        <div className="w-full p-5">
+        <div className="space-y-8 animate-fade-in p-5">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight">Service Management</h1>
+                    <p className="text-slate-400 font-bold text-sm mt-1 italic">
+                        Managing {count} available services
+                    </p>
+                </div>
 
-            {
-                count == 0 ?
-                    <div className="w-full rounded p-5 bg-sky-200 text-sky-600 font-semibold">Sorry, there are no data to display.</div> :
-                    <div>
-                        <h3>
-                            <Link href="/admin/services/add">
-                                <button type="button" className="bg-sky-500 text-white px-3 py-2 rounded-sm font-semibold mb-3 cursor-pointer">+ Add New Service</button>
-                            </Link>
-                        </h3>
-                        <h4 className="text-xl font-bold  ">
-                            Service Management
-                        </h4>
-                        <h1>
-                            Service List ({count} Services)
-                        </h1>
-                        <Search search={search || ""} />
+                <div className="flex items-center flex-wrap gap-3">
+                    <Search search={search || ""} />
+                    <Link href="/admin/services/add">
+                        <button className="gradient-blue text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-blue-100 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 group">
+                            <span className="text-xl leading-none font-medium mb-0.5 group-hover:rotate-90 transition-transform duration-300">+</span>
+                            <span>Add Service</span>
+                        </button>
+                    </Link>
+                </div>
+            </div>
+
+            {count == 0 ? (
+                <div className="glass-card p-12 flex flex-col items-center justify-center text-center border-dashed border-2 border-slate-200 mt-8">
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    </div>
+                    <h3 className="text-xl font-black text-slate-400">No Services Found</h3>
+                    <p className="text-slate-300 font-medium max-w-xs mt-2">
+                        Try adjusting your search or add a new service to get started.
+                    </p>
+                </div>
+            ) : (
+                <div className="glass-card mt-8 overflow-hidden">
                         <table className="w-full rounded-md overflow-hidden shadow border ">
                             <thead>
                                 <tr>
@@ -149,8 +164,8 @@ export default async function ServicePage(props: Props) {
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-            }
+                </div>
+            )}
         </div>
     )
 }
